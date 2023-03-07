@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DialogAddPlayerComponent } from '../dialog-add-player/dialog-add-player.component';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ActivatedRoute } from '@angular/router';
+import { EditPlayerComponent } from '../edit-player/edit-player.component';
 
 @Component({
   selector: 'app-game',
@@ -21,6 +22,7 @@ export class GameComponent implements OnInit {
     this.route.params.subscribe((params) => {
       console.log(params['id']);
       this.gameId = params['id'];
+
       this
         .firestore
         .collection('games')
@@ -31,6 +33,7 @@ export class GameComponent implements OnInit {
           this.game.currentPlayer = game.currentPlayer;
           this.game.playedCards = game.playedCards;
           this.game.players = game.players;
+          this.game.playerImages = game.playerImages;
           this.game.stack = game.stack;
           this.game.pickCardAnimation = game.pickCardAnimation;
           this.game.currentCard = game.currentCard;
@@ -62,12 +65,25 @@ export class GameComponent implements OnInit {
     }
   }
 
+  editPlayer(playerId: number) {
+    console.log('Edit player:', playerId);
+
+    const dialogRef = this.dialog.open(EditPlayerComponent);
+    dialogRef.afterClosed().subscribe((change: string) => {
+      console.log('Received change', change);
+
+      this.game.playerImages[playerId] = change;
+      this.saveGame();
+        });
+  }
+
   openDialog(): void {
-    const dialogRef = this.dialog.open(DialogAddPlayerComponent, {});
+    const dialogRef = this.dialog.open(DialogAddPlayerComponent);
 
     dialogRef.afterClosed().subscribe((name: string) => {
       if (name && name.length > 0) {
         this.game.players.push(name);
+        this.game.playerImages.push('1.webp');
         this.saveGame();
       }
     });
