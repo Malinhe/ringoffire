@@ -14,13 +14,14 @@ import { EditPlayerComponent } from '../edit-player/edit-player.component';
 export class GameComponent implements OnInit {
   game: Game;
   gameId: string;
+  gameOver = false;
 
   constructor(private route: ActivatedRoute, private firestore: AngularFirestore, public dialog: MatDialog) { }
 
   ngOnInit(): void {
     this.newGame();
     this.route.params.subscribe((params) => {
-      console.log(params['id']);
+     
       this.gameId = params['id'];
 
       this
@@ -29,7 +30,7 @@ export class GameComponent implements OnInit {
         .doc(this.gameId)
         .valueChanges()
         .subscribe((game: any) => {
-          console.log('Games update', game);
+         
           this.game.currentPlayer = game.currentPlayer;
           this.game.playedCards = game.playedCards;
           this.game.players = game.players;
@@ -46,12 +47,13 @@ export class GameComponent implements OnInit {
   }
 
   takeCard() {
-    if (!this.game.pickCardAnimation) {
+    if(this.game.stack.length == 0) {
+      this.gameOver = true;
+    } else if (!this.game.pickCardAnimation) {
       this.game.currentCard = this.game.stack.pop(); 
-      console.log(this.game.currentCard);
+   
       this.game.pickCardAnimation = true;
-      console.log(this.game);
-      console.log(this.game.currentCard);
+      
       this.game.currentPlayer++;
       this.game.currentPlayer = this.game.currentPlayer % this.game.players.length;
 
@@ -66,11 +68,11 @@ export class GameComponent implements OnInit {
   }
 
   editPlayer(playerId: number) {
-    console.log('Edit player:', playerId);
+ 
 
     const dialogRef = this.dialog.open(EditPlayerComponent);
     dialogRef.afterClosed().subscribe((change: string) => {
-      console.log('Received change', change);
+
       if(change) {
 
         if(change == 'DELETE') {
